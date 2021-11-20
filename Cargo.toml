@@ -6,23 +6,25 @@ edition = "2018"
 license = "MIT"
 description = "A fast and reliable alternative to rsync for synchronizing local files"
 
-repository = "https://github.com/wchang22/lumins"
+repository = "https://github.com/safai-labs/lumins"
 readme = "./README.md"
 keywords = ["rsync", "linux", "file", "cli", "sync"]
 categories = ["command-line-utilities", "filesystem", ]
 
 [badges]
-travis-ci = { repository = "wchang22/LuminS", branch = "master" }
-codecov = { repository = "wchang22/LuminS", branch = "master", service = "github" }
+travis-ci = { repository = "safai-labs/LuminS", branch = "master" }
+codecov = { repository = "safai-labs/LuminS", branch = "master", service = "github" }
+
+
 
 [dependencies]
 clap = {version = "2.33.1", features = ["yaml"]}
 rayon = "1.3.1"
 blake2 = "0.9.0"
-hashbrown = {version = "0.8.0", features = ["rayon"]}
+hashbrown = {version = "0.11.2", features = ["rayon"]}
 seahash = "4.0.0"
-env_logger = "0.7.1"
+env_logger = "0.9.0"
 log = "0.4.8"
-indicatif = "0.15.0"
+indicatif = "0.16.2"
 lazy_static = "1.4.0"
 bitflags = "1.2.1"

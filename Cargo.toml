@@ -11,6 +11,14 @@ readme = "./README.md"
 keywords = ["rsync", "linux", "file", "cli", "sync"]
 categories = ["command-line-utilities", "filesystem", ]
 
+[lib]
+name = "lms"
+path = "src/lib.rs"
+
+[[bin]]
+name = "lms"
+path = "src/main.rs"
+
 [badges]
 travis-ci = { repository = "wchang22/LuminS", branch = "master" }
 codecov = { repository = "wchang22/LuminS", branch = "master", service = "github" }

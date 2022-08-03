@@ -5,19 +5,21 @@
 <p align="center">
   <a href="https://travis-ci.org/wchang22/LuminS"><img src="https://travis-ci.org/wchang22/LuminS.svg?branch=master" alt="Build Status" /></a>
   <a href="https://codecov.io/gh/wchang22/LuminS"><img src="https://codecov.io/gh/wchang22/LuminS/branch/master/graph/badge.svg" alt="Code Coverage" /></a>
-  <a href="https://crates.io/crates/lms"><img src="http://meritbadge.herokuapp.com/lms" alt="Crate" /></a>
+  <a href="https://crates.io/crates/lms"><img src="https://img.shields.io/crates/v/lms.svg" alt="Crate" /></a>
   <a href="https://docs.rs/lms"><img src="https://docs.rs/lms/badge.svg" alt="Docs" /></a>
 </p>
 <p align="center">
-  <img src="examples/lumins.gif" alt="Demo"    
+  <img src="examples/lumins.gif" alt="Demo"
 </p>
+
+<h3 align="center"><b>Note</b>: This project is no longer actively maintained. Pull requests are still welcome.</h3>
 
 ## Features
 
 <table>
     <tr><td><b>100% Rust</b></td></tr>
     <tr><td><b>Powered by the <a href="https://github.com/rayon-rs/rayon">Rayon</a> library for high parallel perfomance</b></td></tr>
-    <tr><td><b>Supported on Unix-based platforms</b></td></tr>
+    <tr><td><b>Supported on Unix-based platforms or Windows</b></td></tr>
     <tr><td><b>Extremely fast at synchronizing directories with large quantities of files</b></td></tr>
     <tr><td><b>Multithreaded copy, remove, and sync</b></td></tr>
     <tr><td><b>A progress bar using <a href="https://github.com/mitsuhiko/indicatif">indicatif</a></b></td></tr>

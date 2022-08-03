@@ -4,6 +4,7 @@ use std::io;
 
 use rayon::prelude::*;
 
+use crate::file_ops::FileSets;
 use crate::lumins::{file_ops, file_ops::Dir, parse::Flag};
 use crate::progress::{self, PROGRESS_BAR};
 
@@ -88,7 +89,12 @@ pub fn synchronize(src: &str, dest: &str, flags: Flag) -> Result<(), io::Error> 
 /// * `dest` is an invalid directory
 pub fn copy(src: &str, dest: &str, _flags: Flag) -> Result<(), io::Error> {
     // Retrieve data from src directory about files, dirs, symlinks
-    let src_file_sets = file_ops::get_all_files(&src)?;
+    copy_sets(&file_ops::get_all_files(&src)?, src, dest, _flags)
+}
+
+
+pub fn copy_sets(src_file_sets: &FileSets,
+    src: &str, dest: &str, _flags: Flag) -> Result<(), io::Error> {
     let src_files = src_file_sets.files();
     let src_dirs = src_file_sets.dirs();
     let src_symlinks = src_file_sets.symlinks();
@@ -103,6 +109,7 @@ pub fn copy(src: &str, dest: &str, _flags: Flag) -> Result<(), io::Error> {
 
     Ok(())
 }
+
 
 /// Deletes directory `target`
 ///

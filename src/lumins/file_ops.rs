@@ -184,7 +184,7 @@ impl Symlink {
 }
 
 /// A struct that represents sets of different types of files
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct FileSets {
     files: HashSet<File>,
     dirs: HashSet<Dir>,

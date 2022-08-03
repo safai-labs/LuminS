@@ -42,6 +42,8 @@ pub struct ParseResult<'a> {
     pub flags: Flag,
 }
 
+/// Argument Parse Errors
+
 /// Parses command line arguments for source and destination folders and
 /// creates the destination folder if it does not exist
 ///
@@ -50,7 +52,7 @@ pub struct ParseResult<'a> {
 /// but is not limited to just these cases:
 /// * The source folder is not a valid directory
 /// * The destination folder could not be created
-pub fn parse_args<'a>(args: &'a ArgMatches) -> Result<ParseResult<'a>, ()> {
+pub fn parse_args<'a>(args: &'a ArgMatches) -> Result<ParseResult<'a>, &'static str> {
     // These are safe to unwrap since subcommands are required
     let sub_command_name = args.subcommand_name().unwrap();
     let args = args.subcommand_matches(sub_command_name).unwrap();
@@ -86,7 +88,7 @@ pub fn parse_args<'a>(args: &'a ArgMatches) -> Result<ParseResult<'a>, ()> {
             dest: vec![args.value_of("DESTINATION").unwrap().to_string()],
             sub_command_type: SubCommandType::Synchronize,
         },
-        _ => return Err(()),
+        _ => return Err("Unknown subcommand"),
     };
 
     // Validate directories
@@ -109,7 +111,7 @@ pub fn parse_args<'a>(args: &'a ArgMatches) -> Result<ParseResult<'a>, ()> {
             });
 
             if sub_command.dest.is_empty() {
-                return Err(());
+                return Err("No target directories specified");
             }
         }
         SubCommandType::Copy | SubCommandType::Synchronize => {
@@ -121,12 +123,12 @@ pub fn parse_args<'a>(args: &'a ArgMatches) -> Result<ParseResult<'a>, ()> {
                             "Source Error -- {} is not a directory",
                             sub_command.src.unwrap()
                         );
-                        return Err(());
+                        return Err("Source Error -- Source is not a directory");
                     }
                 }
                 Err(e) => {
                     eprintln!("Source Error -- {}: {}", sub_command.src.unwrap(), e);
-                    return Err(());
+                    return Err("Source Error -- Source is not a directory");
                 }
             };
 
@@ -152,7 +154,7 @@ pub fn parse_args<'a>(args: &'a ArgMatches) -> Result<ParseResult<'a>, ()> {
                     }
                     Err(e) => {
                         eprintln!("Destination Error -- {}: {}", sub_command.dest[0], e);
-                        return Err(());
+                        return Err("Destination Error -- Destination could not be created");
                     }
                 }
             }

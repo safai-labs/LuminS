@@ -20,9 +20,10 @@ use crate::progress::PROGRESS_BAR;
 /// Ensures that all files (file, dir, symlink) have
 /// a way of obtaining their path, copying, and deleting
 pub trait FileOps {
-    fn path(&self) -> &PathBuf;
-    fn remove(&self, path: &PathBuf);
-    fn copy(&self, src: &PathBuf, dest: &PathBuf);
+    fn path(&self) -> &Path;
+    fn as_path_buf(&self) -> PathBuf;
+    fn remove(&self, path: &Path);
+    fn copy(&self, src: &Path, dest: &Path);
 }
 
 /// A struct that represents a single file
@@ -33,16 +34,19 @@ pub struct File {
 }
 
 impl FileOps for File {
-    fn path(&self) -> &PathBuf {
+    fn path(&self) -> &Path {
         &self.path
     }
-    fn remove(&self, path: &PathBuf) {
+    fn as_path_buf(&self) -> PathBuf {
+        self.path.clone()
+    }
+    fn remove(&self, path: &Path) {
         match fs::remove_file(&path) {
             Ok(_) => info!("Deleting file {:?}", path),
             Err(e) => error!("Error -- Deleting file {:?}: {}", path, e),
         }
     }
-    fn copy(&self, src: &PathBuf, dest: &PathBuf) {
+    fn copy(&self, src: &Path, dest: &Path) {
         match fs::copy(&src, &dest) {
             Ok(_) => info!("Copying file {:?} -> {:?}", src, dest),
             Err(e) => error!("Error -- Copying file {:?}: {}", src, e),
@@ -60,7 +64,7 @@ impl File {
 
     #[allow(unused)]
     #[allow(clippy::unused_io_amount)]
-    fn diff_copy(src: &PathBuf, dest: &PathBuf) -> Result<(), io::Error> {
+    fn diff_copy(src: &Path, dest: &Path) -> Result<(), io::Error> {
         if !Path::new(&dest).exists() {
             fs::copy(&src, &dest)?;
         }
@@ -105,16 +109,19 @@ pub struct Dir {
 }
 
 impl FileOps for Dir {
-    fn path(&self) -> &PathBuf {
+    fn path(&self) -> &Path {
         &self.path
     }
-    fn remove(&self, path: &PathBuf) {
+    fn as_path_buf(&self) -> PathBuf {
+        self.path.clone()
+    }
+    fn remove(&self, path: &Path) {
         match fs::remove_dir(&path) {
             Ok(_) => info!("Deleting dir {:?}", path),
             Err(e) => error!("Error -- Deleting dir {:?}: {}", path, e),
         }
     }
-    fn copy(&self, _src: &PathBuf, dest: &PathBuf) {
+    fn copy(&self, _src: &Path, dest: &Path) {
         match fs::create_dir_all(&dest) {
             Ok(_) => info!("Creating dir {:?}", dest),
             Err(e) => error!("Error -- Creating dir {:?}: {}", dest, e),
@@ -138,17 +145,20 @@ pub struct Symlink {
 }
 
 impl FileOps for Symlink {
-    fn path(&self) -> &PathBuf {
+    fn path(&self) -> &Path {
         &self.path
     }
-    fn remove(&self, path: &PathBuf) {
+    fn as_path_buf(&self) -> PathBuf {
+        self.path.clone()
+    }
+    fn remove(&self, path: &Path) {
         match fs::remove_file(&path) {
             Ok(_) => info!("Deleting symlink {:?}", path),
             Err(e) => error!("Error -- Deleting symlink {:?}: {}", path, e),
         }
     }
     #[cfg(target_family = "unix")]
-    fn copy(&self, _src: &PathBuf, dest: &PathBuf) {
+    fn copy(&self, _src: &Path, dest: &Path) {
         use std::os::unix::fs;
 
         match fs::symlink(&self.target, &dest) {
@@ -157,7 +167,7 @@ impl FileOps for Symlink {
         }
     }
     #[cfg(target_family = "windows")]
-    fn copy(&self, _src: &PathBuf, dest: &PathBuf) {
+    fn copy(&self, _src: &Path, dest: &Path) {
         use std::os::windows::fs;
         if self.target.is_file() {
             match fs::symlink_file(&self.target, &dest) {
@@ -184,7 +194,7 @@ impl Symlink {
 }
 
 /// A struct that represents sets of different types of files
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct FileSets {
     files: HashSet<File>,
     dirs: HashSet<Dir>,
@@ -266,30 +276,30 @@ where
     S: FileOps,
 {
     if flags.contains(Flag::SECURE) {
-        let src_file_hash_secure = hash_file_secure(file_to_compare, &src);
+        let src_file_hash_secure = hash_file_secure(file_to_compare, src);
 
         if src_file_hash_secure.is_none() {
-            copy_file(file_to_compare, &src, &dest);
+            copy_file(file_to_compare, src, dest);
             return;
         }
 
-        let dest_file_hash_secure = hash_file_secure(file_to_compare, &dest);
+        let dest_file_hash_secure = hash_file_secure(file_to_compare, dest);
 
         if src_file_hash_secure != dest_file_hash_secure {
-            copy_file(file_to_compare, &src, &dest);
+            copy_file(file_to_compare, src, dest);
         }
     } else {
-        let src_file_hash = hash_file(file_to_compare, &src);
+        let src_file_hash = hash_file(file_to_compare, src);
 
         if src_file_hash.is_none() {
-            copy_file(file_to_compare, &src, &dest);
+            copy_file(file_to_compare, src, dest);
             return;
         }
 
-        let dest_file_hash = hash_file(file_to_compare, &dest);
+        let dest_file_hash = hash_file(file_to_compare, dest);
 
         if src_file_hash != dest_file_hash {
-            copy_file(file_to_compare, &src, &dest);
+            copy_file(file_to_compare, src, dest);
         }
     }
 }
@@ -308,7 +318,7 @@ where
     S: FileOps + Sync + 'a,
 {
     files_to_copy.for_each(|file| {
-        copy_file(file, &src, &dest);
+        copy_file(file, src, dest);
         PROGRESS_BAR.inc(1);
     });
 }
@@ -325,10 +335,8 @@ fn copy_file<S>(file_to_copy: &S, src: &str, dest: &str)
 where
     S: FileOps,
 {
-    let src_file = [&PathBuf::from(&src), file_to_copy.path()].iter().collect();
-    let dest_file = [&PathBuf::from(&dest), file_to_copy.path()]
-        .iter()
-        .collect();
+    let src_file = Path::new(src).join(file_to_copy.path());
+    let dest_file = PathBuf::from(dest).join(file_to_copy.path());
 
     file_to_copy.copy(&src_file, &dest_file);
 }
@@ -347,7 +355,8 @@ where
     S: FileOps + Sync + 'a,
 {
     files_to_delete.for_each(|file| {
-        let path = [&PathBuf::from(&location), file.path()].iter().collect();
+        // let path = [&Path::from(&location), file.path()].iter().collect();
+        let path = PathBuf::from(location).join(file.path());
         file.remove(&path);
         PROGRESS_BAR.inc(1);
     });
@@ -367,7 +376,8 @@ where
     S: FileOps + 'a,
 {
     for file in files_to_delete {
-        let path = [&PathBuf::from(&location), file.path()].iter().collect();
+        // let path = [&Path::from(&location), file.path()].iter().collect();
+        let path = PathBuf::from(location).join(file.path());
         file.remove(&path);
         PROGRESS_BAR.inc(1);
     }
@@ -413,10 +423,7 @@ pub fn hash_file<S>(file_to_hash: &S, location: &str) -> Option<u64>
 where
     S: FileOps,
 {
-    let file: PathBuf = [&PathBuf::from(&location), file_to_hash.path()]
-        .iter()
-        .collect();
-
+    let file = PathBuf::from(location).join(file_to_hash.path());
     match fs::read(file) {
         Ok(contents) => Some(seahash::hash(&contents)),
         Err(_) => None,
@@ -437,10 +444,7 @@ pub fn hash_file_secure<S>(file_to_hash: &S, location: &str) -> Option<Vec<u8>>
 where
     S: FileOps,
 {
-    let file: PathBuf = [&PathBuf::from(&location), file_to_hash.path()]
-        .iter()
-        .collect();
-
+    let file = PathBuf::from(location).join(file_to_hash.path());
     match &mut fs::File::open(&file) {
         Ok(file) => {
             let mut hasher = Blake2b::new();
@@ -470,7 +474,7 @@ where
 /// * Ok: A `FileSets` containing a set of files a set of directories
 /// * Error: If `src` is an invalid directory
 pub fn get_all_files(src: &str) -> Result<FileSets, io::Error> {
-    get_all_files_helper(&PathBuf::from(&src), &src)
+    get_all_files_helper(&PathBuf::from(src), src)
 }
 
 /// Recursive helper for `get_all_files`
@@ -482,7 +486,7 @@ pub fn get_all_files(src: &str) -> Result<FileSets, io::Error> {
 /// # Returns
 /// * Ok: A `FileSets` containing a set of files a set of directories
 /// * Error: If `src` is an invalid directory
-fn get_all_files_helper(src: &PathBuf, base: &str) -> Result<FileSets, io::Error> {
+fn get_all_files_helper(src: &Path, base: &str) -> Result<FileSets, io::Error> {
     let dir = src.read_dir()?;
 
     let mut files = HashSet::new();
@@ -1479,8 +1483,8 @@ mod test_copy_files {
     #[test]
     #[cfg(target_family = "windows")]
     fn copy_symlink() {
-        use std::os::windows::fs as wfs;
         use std::env;
+        use std::os::windows::fs as wfs;
         const TEST_DIR: &str = "test_copy_files_copy_symlink";
         const TEST_DIR_OUT: &str = "test_copy_files_copy_symlink_out_seq";
         let CURRENT_PATH: PathBuf = env::current_dir().unwrap();
@@ -1516,8 +1520,8 @@ mod test_copy_files {
             }
         );
 
-       fs::remove_dir_all(TEST_DIR).unwrap();
-       fs::remove_dir_all(TEST_DIR_OUT).unwrap();
+        fs::remove_dir_all(TEST_DIR).unwrap();
+        fs::remove_dir_all(TEST_DIR_OUT).unwrap();
     }
 }
 

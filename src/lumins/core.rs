@@ -96,14 +96,18 @@ pub fn copy(src: &str, dest: &str, _flags: Flag) -> Result<(), io::Error> {
 ///
 /// # Arguments
 /// * `sets`: A set of files, directories, and symlinks (basedir at `src`)
-/// * `src`: Source directory 
+/// * `src`: Source directory
 /// * `dest`: Destination directory
 /// * `flags`: set of flags from `Flag`
 ///
 /// #Errors
 /// TODO: This function returns a bunch of errors to be documented later
-pub fn copy_sets(src_file_sets: &FileSets,
-    src: &str, dest: &str, _flags: Flag) -> Result<(), io::Error> {
+pub fn copy_sets(
+    src_file_sets: &FileSets,
+    src: &str,
+    dest: &str,
+    _flags: Flag,
+) -> Result<(), io::Error> {
     let src_files = src_file_sets.files();
     let src_dirs = src_file_sets.dirs();
     let src_symlinks = src_file_sets.symlinks();
@@ -118,7 +122,6 @@ pub fn copy_sets(src_file_sets: &FileSets,
 
     Ok(())
 }
-
 
 /// Deletes directory `target`
 ///

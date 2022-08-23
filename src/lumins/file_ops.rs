@@ -276,16 +276,14 @@ where
     S: FileOps,
 {
     if flags.contains(Flag::SECURE) {
-        let src_file_hash_secure = 
-            hash_file_secure(file_to_compare, src);
+        let src_file_hash_secure = hash_file_secure(file_to_compare, src);
 
         if src_file_hash_secure.is_none() {
             copy_file(file_to_compare, src, dest);
             return;
         }
 
-        let dest_file_hash_secure =
-            hash_file_secure(file_to_compare, dest);
+        let dest_file_hash_secure = hash_file_secure(file_to_compare, dest);
 
         if src_file_hash_secure != dest_file_hash_secure {
             copy_file(file_to_compare, src, dest);
@@ -1485,8 +1483,8 @@ mod test_copy_files {
     #[test]
     #[cfg(target_family = "windows")]
     fn copy_symlink() {
-        use std::os::windows::fs as wfs;
         use std::env;
+        use std::os::windows::fs as wfs;
         const TEST_DIR: &str = "test_copy_files_copy_symlink";
         const TEST_DIR_OUT: &str = "test_copy_files_copy_symlink_out_seq";
         let CURRENT_PATH: PathBuf = env::current_dir().unwrap();
@@ -1522,8 +1520,8 @@ mod test_copy_files {
             }
         );
 
-       fs::remove_dir_all(TEST_DIR).unwrap();
-       fs::remove_dir_all(TEST_DIR_OUT).unwrap();
+        fs::remove_dir_all(TEST_DIR).unwrap();
+        fs::remove_dir_all(TEST_DIR_OUT).unwrap();
     }
 }
 

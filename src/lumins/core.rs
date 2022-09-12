@@ -1,6 +1,7 @@
 //! Contains core copy, remove, synchronize functions
 
 use std::io;
+use std::time::Duration;
 
 use rayon::prelude::*;
 
@@ -144,7 +145,7 @@ pub fn remove(target: &str, _flags: Flag) -> Result<(), io::Error> {
     progress::progress_init(
         (target_files.len() + target_dirs.len() + target_symlinks.len()) as u64,
     );
-    PROGRESS_BAR.enable_steady_tick(1);
+    PROGRESS_BAR.enable_steady_tick(Duration::from_millis(100));
 
     // Delete everything
     file_ops::delete_files(target_files.into_par_iter(), target);

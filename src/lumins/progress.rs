@@ -10,7 +10,7 @@ lazy_static! {
         let progress_bar = ProgressBar::new(0);
         progress_bar.set_style(
             ProgressStyle::default_bar()
-                .template("[{elapsed_precise}] [{bar:40.green/blue}] {pos}/{len} ({eta})"),
+                .template("[{elapsed_precise}] [{bar:40.green/blue}] {pos}/{len} ({eta})").unwrap(),
         );
         progress_bar
     };
@@ -21,6 +21,7 @@ lazy_static! {
 /// * `length`: Length fo the bar to set
 pub fn progress_init(length: u64) {
     PROGRESS_BAR.set_length(length);
-    PROGRESS_BAR.set_draw_delta(length / 1000);
+    // set-draw delta is no longer necessary.
+    // PROGRESS_BAR.set_draw_delta(PROGRESS_BAR.tick());
     PROGRESS_BAR.set_position(0);
 }

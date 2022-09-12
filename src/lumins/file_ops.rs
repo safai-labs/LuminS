@@ -6,6 +6,7 @@ use std::marker::Sync;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
+use blake2::digest::consts::U32;
 use blake2::{Blake2b, Digest};
 use hashbrown::HashSet;
 use log::{error, info};
@@ -447,7 +448,7 @@ where
     let file = PathBuf::from(location).join(file_to_hash.path());
     match &mut fs::File::open(&file) {
         Ok(file) => {
-            let mut hasher = Blake2b::new();
+            let mut hasher: Blake2b<U32> = Blake2b::new();
 
             match io::copy(file, &mut hasher) {
                 Ok(_) => Some(hasher.finalize().to_vec()),

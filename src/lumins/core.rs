@@ -151,7 +151,8 @@ pub fn remove(target: &str, _flags: Flag) -> Result<(), io::Error> {
     file_ops::delete_files(target_files.into_par_iter(), target);
     file_ops::delete_files(target_symlinks.into_par_iter(), target);
 
-    // Directories must always be deleted sequentially so that they are deleted in the correct order
+    // Directories must always be deleted sequentially so that they are deleted in
+    // the correct order
     let mut target_dirs: Vec<&file_ops::Dir> = file_ops::sort_files(target_dirs.into_par_iter());
 
     // Delete the target directory last

@@ -242,40 +242,46 @@ impl FileSets {
     }
 }
 
-/// Compares all files in `files_to_compare` in `src` with all files in `files_to_compare` in `dest`
-/// and copies them over if they are different, in parallel
+/// Compares all files in `files_to_compare` in `src` with all files in
+/// `files_to_compare` in `dest` and copies them over if they are different, in
+/// parallel
 ///
 /// # Arguments
 /// * `files_to_compare`: files to compare
-/// * `src`: base directory of the files to copy from, such that for all `file` in
-/// `files_to_compare`, `src + file.path()` is the absolute path of the source file
-/// * `dest`: base directory of the files to copy to, such that for all `file` in
-/// `files_to_compare`, `dest + file.path()` is the absolute path of the destination file
+/// * `src`: base directory of the files to copy from, such that for all `file`
+///   in
+/// `files_to_compare`, `src + file.path()` is the absolute path of the source
+/// file
+/// * `dest`: base directory of the files to copy to, such that for all `file`
+///   in
+/// `files_to_compare`, `dest + file.path()` is the absolute path of the
+/// destination file
 /// * `flags`: set for Flag's
 pub fn compare_and_copy_files<'a, T, S>(files_to_compare: T, src: &str, dest: &str, flags: Flag)
 where
     T: ParallelIterator<Item = &'a S>,
-    S: FileOps + Sync + 'a,
-{
+    S: FileOps + Sync + 'a, {
     files_to_compare.for_each(|file| {
         compare_and_copy_file(file, src, dest, flags);
         PROGRESS_BAR.inc(2);
     });
 }
 
-/// Compares the given file and copies the src file over if it differs from the dest file
+/// Compares the given file and copies the src file over if it differs from the
+/// dest file
 ///
 /// # Arguments
 /// * `file_to_compare`: file to compare
-/// * `src`: base directory of the file to copy from, such that `src + file.path()`
+/// * `src`: base directory of the file to copy from, such that `src +
+///   file.path()`
 /// is the absolute path of the source file
-/// * `dest`: base directory of the files to copy to, such that `dest + file.path()`
+/// * `dest`: base directory of the files to copy to, such that `dest +
+///   file.path()`
 /// is the absolute path of the destination file
 /// * `flags`: set for Flag's
 fn compare_and_copy_file<S>(file_to_compare: &S, src: &str, dest: &str, flags: Flag)
 where
-    S: FileOps,
-{
+    S: FileOps, {
     if flags.contains(Flag::SECURE) {
         let src_file_hash_secure = hash_file_secure(file_to_compare, src);
 
@@ -309,15 +315,17 @@ where
 ///
 /// # Arguments
 /// * `files_to_copy`: files to copy
-/// * `src`: base directory of the files to copy from, such that for all `file` in
+/// * `src`: base directory of the files to copy from, such that for all `file`
+///   in
 /// `files_to_copy`, `src + file.path()` is the absolute path of the source file
-/// * `dest`: base directory of the files to copy to, such that for all `file` in
-/// `files_to_copy`, `dest + file.path()` is the absolute path of the destination file
+/// * `dest`: base directory of the files to copy to, such that for all `file`
+///   in
+/// `files_to_copy`, `dest + file.path()` is the absolute path of the
+/// destination file
 pub fn copy_files<'a, T, S>(files_to_copy: T, src: &str, dest: &str)
 where
     T: ParallelIterator<Item = &'a S>,
-    S: FileOps + Sync + 'a,
-{
+    S: FileOps + Sync + 'a, {
     files_to_copy.for_each(|file| {
         copy_file(file, src, dest);
         PROGRESS_BAR.inc(1);
@@ -328,14 +336,15 @@ where
 ///
 /// # Arguments
 /// * `files_to_copy`: file to copy
-/// * `src`: base directory of the files to copy from, such that `src + file_to_copy.path()`
+/// * `src`: base directory of the files to copy from, such that `src +
+///   file_to_copy.path()`
 /// is the absolute path of the source file
-/// * `dest`: base directory of the files to copy to, such that `dest + file.path()`
+/// * `dest`: base directory of the files to copy to, such that `dest +
+///   file.path()`
 /// is the absolute path of the destination file
 fn copy_file<S>(file_to_copy: &S, src: &str, dest: &str)
 where
-    S: FileOps,
-{
+    S: FileOps, {
     let src_file = Path::new(src).join(file_to_copy.path());
     let dest_file = PathBuf::from(dest).join(file_to_copy.path());
 
@@ -344,17 +353,18 @@ where
 
 /// Deletes all given files in parallel
 ///
-/// There is no guarantee that this function will delete the files in the given order
+/// There is no guarantee that this function will delete the files in the given
+/// order
 ///
 /// # Arguments
 /// `files_to_delete`: files to delete
-/// * `location`: base directory of the files to delete, such that for all `file` in
+/// * `location`: base directory of the files to delete, such that for all
+///   `file` in
 /// `files_to_delete`, `location + file.path()` is the absolute path of the file
 pub fn delete_files<'a, T, S>(files_to_delete: T, location: &str)
 where
     T: ParallelIterator<Item = &'a S>,
-    S: FileOps + Sync + 'a,
-{
+    S: FileOps + Sync + 'a, {
     files_to_delete.for_each(|file| {
         // let path = [&Path::from(&location), file.path()].iter().collect();
         let path = PathBuf::from(location).join(file.path());
@@ -369,13 +379,13 @@ where
 ///
 /// # Arguments
 /// * `files_to_delete`: files to delete, or sorted empty directories
-/// * `location`: base directory of the files to delete, such that for all `file` in
+/// * `location`: base directory of the files to delete, such that for all
+///   `file` in
 /// `files_to_delete`, `location + file.path()` is the absolute path of the file
 pub fn delete_files_sequential<'a, T, S>(files_to_delete: T, location: &str)
 where
     T: IntoIterator<Item = &'a S>,
-    S: FileOps + 'a,
-{
+    S: FileOps + 'a, {
     for file in files_to_delete {
         // let path = [&Path::from(&location), file.path()].iter().collect();
         let path = PathBuf::from(location).join(file.path());
@@ -384,7 +394,8 @@ where
     }
 }
 
-/// Sorts (unstable) file paths in descending order by number of components, in parallel
+/// Sorts (unstable) file paths in descending order by number of components, in
+/// parallel
 ///
 /// # Arguments
 /// `files_to_sort`: files to sort
@@ -398,8 +409,7 @@ where
 pub fn sort_files<'a, T, S>(files_to_sort: T) -> Vec<&'a S>
 where
     T: ParallelIterator<Item = &'a S>,
-    S: FileOps + Sync + 'a,
-{
+    S: FileOps + Sync + 'a, {
     let mut files_to_sort = Vec::from_par_iter(files_to_sort);
     files_to_sort.par_sort_unstable_by(|a, b| {
         b.path()
@@ -410,7 +420,8 @@ where
     files_to_sort
 }
 
-/// Generates a hash of the given file, using the Seahash non-cryptographic hash function
+/// Generates a hash of the given file, using the Seahash non-cryptographic hash
+/// function
 ///
 /// # Arguments
 /// * `file_to_hash`: file object to hash
@@ -422,8 +433,7 @@ where
 /// * Err: If the given file cannot be hashed
 pub fn hash_file<S>(file_to_hash: &S, location: &str) -> Option<u64>
 where
-    S: FileOps,
-{
+    S: FileOps, {
     let file = PathBuf::from(location).join(file_to_hash.path());
     match fs::read(file) {
         Ok(contents) => Some(seahash::hash(&contents)),
@@ -431,7 +441,8 @@ where
     }
 }
 
-/// Generates a hash of the given file, using the BLAKE2b cryptographic hash function
+/// Generates a hash of the given file, using the BLAKE2b cryptographic hash
+/// function
 ///
 /// # Arguments
 /// * `file_to_hash`: file object to hash
@@ -443,8 +454,7 @@ where
 /// * Err: If the given file cannot be hashed
 pub fn hash_file_secure<S>(file_to_hash: &S, location: &str) -> Option<Vec<u8>>
 where
-    S: FileOps,
-{
+    S: FileOps, {
     let file = PathBuf::from(location).join(file_to_hash.path());
     match &mut fs::File::open(&file) {
         Ok(file) => {

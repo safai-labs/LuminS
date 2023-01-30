@@ -1,4 +1,5 @@
-//! LuminS (lms) is a fast and reliable alternative to rsync for synchronizing local files
+//! LuminS (lms) is a fast and reliable alternative to rsync for synchronizing
+//! local files
 //!
 //! ```usage
 //! USAGE:
